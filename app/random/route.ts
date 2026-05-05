@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { sql } from 'drizzle-orm';
 import { db, schema } from '@/lib/db/client';
 import { generateRandomTitle } from '@/lib/ai/router';
@@ -6,8 +6,6 @@ import { isValidSlug, titleToSlug } from '@/lib/slug';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
-
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
 
 /**
  * Random article. Strategy:
@@ -17,7 +15,8 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
  * On a fresh DB the existing-slug branch always misses, and we fall through
  * to a fresh title.
  */
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const baseUrl = request.nextUrl.origin;
   const goExisting = Math.random() < 0.6;
 
   if (goExisting) {
@@ -28,7 +27,7 @@ export async function GET() {
       .limit(1)
       .catch(() => []);
     if (existing[0]?.slug) {
-      return NextResponse.redirect(new URL(`/wiki/${existing[0].slug}`, SITE_URL));
+      return NextResponse.redirect(new URL(`/wiki/${existing[0].slug}`, baseUrl));
     }
   }
 
@@ -41,7 +40,8 @@ export async function GET() {
   }
   const slug = titleToSlug(title);
   if (!isValidSlug(slug)) {
-    return NextResponse.redirect(new URL('/', SITE_URL));
+    return NextResponse.redirect(new URL('/', baseUrl));
   }
-  return NextResponse.redirect(new URL(`/wiki/${slug}`, SITE_URL));
+  return NextResponse.redirect(new URL(`/wiki/${slug}`, baseUrl));
 }
+
