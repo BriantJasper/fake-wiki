@@ -8,6 +8,7 @@ import { ArticleView } from '@/components/article-view';
 import { Infobox } from '@/components/infobox';
 import { DisclaimerBanner } from '@/components/disclaimer-banner';
 import { StreamingArticle } from '@/components/streaming-article';
+import { ArticleToc } from '@/components/article-toc';
 
 type Params = { slug: string };
 
@@ -134,6 +135,7 @@ export default async function ArticlePage({
         </article>
 
         <aside className="article-aside">
+          <ArticleToc />
           <Infobox article={row.contentJson} />
         </aside>
       </div>

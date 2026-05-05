@@ -1,6 +1,12 @@
 import type { Metadata } from 'next';
 import { Fraunces, Source_Serif_4, JetBrains_Mono } from 'next/font/google';
 import { Nav } from '@/components/nav';
+import { AuroraBackground } from '@/components/aurora-background';
+import { ReadingProgress } from '@/components/reading-progress';
+import { CommandPalette } from '@/components/command-palette';
+import { ShortcutsOverlay } from '@/components/shortcuts-overlay';
+import { ScrollReveal } from '@/components/scroll-reveal';
+import { ThemeProvider, THEME_INIT_SCRIPT } from '@/components/theme-provider';
 import './globals.css';
 
 const fraunces = Fraunces({
@@ -49,14 +55,25 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       className={`${fraunces.variable} ${sourceSerif.variable} ${jetbrains.variable}`}
       suppressHydrationWarning
     >
+      <head>
+        {/* Pre-hydration: set data-theme synchronously to avoid FOUC. */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+      </head>
       <body>
-        <Nav />
-        <main id="main">{children}</main>
-        <footer className="read-col" style={{ paddingBlock: '4rem 2rem' }}>
-          <div className="margin-note" style={{ textAlign: 'center' }}>
-            {SITE_NAME} · transmitted from nowhere in particular
-          </div>
-        </footer>
+        <ThemeProvider>
+          <AuroraBackground />
+          <ReadingProgress />
+          <Nav />
+          <main id="main">{children}</main>
+          <footer className="read-col" style={{ paddingBlock: '4rem 2rem' }}>
+            <div className="margin-note" style={{ textAlign: 'center' }}>
+              {SITE_NAME} · transmitted from nowhere in particular
+            </div>
+          </footer>
+          <CommandPalette />
+          <ShortcutsOverlay />
+          <ScrollReveal />
+        </ThemeProvider>
       </body>
     </html>
   );

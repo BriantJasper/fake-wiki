@@ -1,19 +1,41 @@
+'use client';
+
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import { ThemeToggle } from './theme-toggle';
 
 const SITE_NAME = process.env.NEXT_PUBLIC_SITE_NAME ?? 'Atlas of Nowhere';
 
+function isMac() {
+  if (typeof navigator === 'undefined') return false;
+  return /Mac|iPhone|iPad|iPod/.test(navigator.platform);
+}
+
+function dispatchPalette() {
+  window.dispatchEvent(new CustomEvent('atlas:palette'));
+}
+
 export function Nav() {
+  const [scrolled, setScrolled] = useState(false);
+  const [mod, setMod] = useState('Ctrl');
+
+  useEffect(() => {
+    setMod(isMac() ? '⌘' : 'Ctrl');
+  }, []);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
   return (
-    <header
-      style={{
-        borderBottom: '1px solid var(--rule)',
-        padding: '0.9rem var(--gutter)',
-      }}
-    >
+    <header className={`site-nav${scrolled ? ' is-scrolled' : ''}`}>
       <div
         style={{
           display: 'flex',
-          alignItems: 'baseline',
+          alignItems: 'center',
           justifyContent: 'space-between',
           maxWidth: '1280px',
           margin: '0 auto',
@@ -33,10 +55,11 @@ export function Nav() {
         >
           {SITE_NAME}
         </Link>
-        <nav
+        <div
           style={{
             display: 'flex',
-            gap: '1.5rem',
+            alignItems: 'center',
+            gap: '1rem',
             fontFamily: 'var(--font-mono)',
             fontSize: '0.72rem',
             letterSpacing: '0.08em',
@@ -44,13 +67,28 @@ export function Nav() {
             color: 'var(--ink-soft)',
           }}
         >
-          <Link href="/random" prefetch={false} style={{ color: 'inherit', textDecoration: 'none' }}>
-            Random plate
+          <button
+            type="button"
+            onClick={dispatchPalette}
+            aria-label="Open command palette"
+            className="theme-toggle"
+            style={{ borderRadius: '4px' }}
+          >
+            <span style={{ opacity: 0.7 }}>Search</span>
+            <span className="kbd" style={{ marginLeft: '0.2rem' }}>{mod}K</span>
+          </button>
+          <Link
+            href="/random"
+            prefetch={false}
+            style={{ color: 'inherit', textDecoration: 'none' }}
+          >
+            Random
           </Link>
           <Link href="/about" style={{ color: 'inherit', textDecoration: 'none' }}>
             About
           </Link>
-        </nav>
+          <ThemeToggle />
+        </div>
       </div>
     </header>
   );

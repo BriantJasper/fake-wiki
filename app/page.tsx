@@ -3,6 +3,7 @@ import { db, schema } from '@/lib/db/client';
 import { desc } from 'drizzle-orm';
 import { plateNumber } from '@/lib/design/plate-number';
 import { AsterismRule } from '@/components/asterism-rule';
+import { ParallaxTitle } from '@/components/parallax-title';
 
 export const revalidate = 60;
 
@@ -28,7 +29,7 @@ export default async function HomePage() {
 
   return (
     <div className="article-grid">
-      <div className="article-margin" aria-hidden>
+      <div className="article-margin reveal" aria-hidden>
         Vol. I
         <br />
         Edition&nbsp;I
@@ -37,64 +38,46 @@ export default async function HomePage() {
       <article style={{ minWidth: 0 }}>
         <header style={{ marginBottom: '3rem' }}>
           <p
-            className="margin-note"
+            className="margin-note reveal"
             style={{ marginBottom: '1rem', color: 'var(--accent)' }}
           >
             The Atlas of Nowhere
           </p>
-          <h1
-            className="display"
-            style={{
-              fontFamily: 'var(--font-display)',
-              fontWeight: 500,
-              fontSize: 'clamp(2.4rem, 6vw, 4.5rem)',
-              lineHeight: 1.02,
-              letterSpacing: '-0.025em',
-            }}
+          <ParallaxTitle>
+            <h1
+              className="display reveal delay-1"
+              style={{
+                fontFamily: 'var(--font-display)',
+                fontWeight: 500,
+                fontSize: 'clamp(2.4rem, 6vw, 4.5rem)',
+                lineHeight: 1.02,
+                letterSpacing: '-0.025em',
+              }}
+            >
+              An encyclopedia
+              <br />
+              of things that
+              <br />
+              <em style={{ fontStyle: 'italic', color: 'var(--accent)' }}>do not exist.</em>
+            </h1>
+          </ParallaxTitle>
+          <p
+            className="reveal delay-2"
+            style={{ marginTop: '2rem', maxWidth: '52ch', color: 'var(--ink-soft)' }}
           >
-            An encyclopedia
-            <br />
-            of things that
-            <br />
-            <em style={{ fontStyle: 'italic', color: 'var(--accent)' }}>do not exist.</em>
-          </h1>
-          <p style={{ marginTop: '2rem', maxWidth: '52ch', color: 'var(--ink-soft)' }}>
             Every entry below is fictional, written by a language model in the steady,
             scholarly voice of a serious reference work. Click any link inside an article
             and the entry it points to will be written into being. The Atlas grows with
             each visitor.
           </p>
-          <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem', flexWrap: 'wrap' }}>
-            <Link
-              href="/random"
-              prefetch={false}
-              style={{
-                fontFamily: 'var(--font-mono)',
-                fontSize: '0.78rem',
-                letterSpacing: '0.1em',
-                textTransform: 'uppercase',
-                padding: '0.7rem 1.2rem',
-                background: 'var(--accent)',
-                color: 'var(--paper)',
-                textDecoration: 'none',
-                border: '1px solid var(--accent)',
-              }}
-            >
+          <div
+            className="reveal delay-3"
+            style={{ display: 'flex', gap: '1rem', marginTop: '2rem', flexWrap: 'wrap' }}
+          >
+            <Link href="/random" prefetch={false} className="btn-mono btn-solid">
               Open a random plate →
             </Link>
-            <Link
-              href="/about"
-              style={{
-                fontFamily: 'var(--font-mono)',
-                fontSize: '0.78rem',
-                letterSpacing: '0.1em',
-                textTransform: 'uppercase',
-                padding: '0.7rem 1.2rem',
-                color: 'var(--ink)',
-                textDecoration: 'none',
-                border: '1px solid var(--rule)',
-              }}
-            >
+            <Link href="/about" className="btn-mono btn-glass">
               About the Atlas
             </Link>
           </div>
@@ -103,18 +86,19 @@ export default async function HomePage() {
         <AsterismRule />
 
         <section>
-          <h2 className="section" style={{ marginTop: 0 }}>
+          <h2 className="section reveal" style={{ marginTop: 0 }}>
             Recently consulted
           </h2>
           {featured.length === 0 ? (
-            <p style={{ color: 'var(--ink-soft)' }}>
+            <p className="reveal" style={{ color: 'var(--ink-soft)' }}>
               The volumes are still being typeset. Open a random plate to begin the Atlas.
             </p>
           ) : (
             <ul style={{ listStyle: 'none', padding: 0, display: 'grid', gap: '1.5rem' }}>
-              {featured.map((a) => (
+              {featured.map((a, idx) => (
                 <li
                   key={a.slug}
+                  className={`reveal delay-${Math.min(4, (idx % 4) + 1)}`}
                   style={{
                     display: 'grid',
                     gridTemplateColumns: 'auto 1fr',
@@ -158,7 +142,7 @@ export default async function HomePage() {
         </section>
       </article>
 
-      <aside className="article-aside" aria-hidden>
+      <aside className="article-aside reveal delay-2" aria-hidden>
         <p
           style={{
             fontFamily: 'var(--font-mono)',
@@ -169,7 +153,7 @@ export default async function HomePage() {
             lineHeight: 1.7,
           }}
         >
-          Editor's note —<br />
+          Editor&apos;s note —<br />
           Entries are generated by a language model on first request and persisted to the
           archive. The Atlas thus appears to remember things it never knew. Treat
           accordingly.

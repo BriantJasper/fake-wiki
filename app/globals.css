@@ -6,6 +6,10 @@
    Visual language: 19th-century gazetteer meets brutalist web. Warm paper,
    deep ink, single warm-red accent for links and marginalia. Serif body,
    serif display, mono for metadata. Marginalia hangs in the gutter.
+
+   Modern overlay: aurora background, glass surfaces, scroll-driven motion,
+   view transitions. The typography stays in the foreground; everything else
+   recedes.
    ============================================================================ */
 
 @theme {
@@ -19,6 +23,10 @@
   --color-rule: oklch(0.85 0.012 80);
   --color-accent: oklch(0.45 0.18 25);
   --color-accent-soft: oklch(0.45 0.18 25 / 0.12);
+  --color-cool: oklch(0.55 0.12 240);
+
+  --ease-plate: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --ease-out-soft: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 :root {
@@ -28,10 +36,17 @@
   --rule: var(--color-rule);
   --accent: var(--color-accent);
   --accent-soft: var(--color-accent-soft);
+  --cool: var(--color-cool);
 
   --measure: 64ch;
   --gutter: clamp(1rem, 4vw, 3rem);
   --margin-gutter: clamp(0rem, 8vw, 12rem);
+
+  --glass-bg: oklch(from var(--paper) l c h / 0.62);
+  --glass-stroke: oklch(from var(--ink) l c h / 0.08);
+  --glass-shadow: 0 1px 0 oklch(from var(--ink) l c h / 0.04),
+                  0 30px 60px -30px oklch(from var(--ink) l c h / 0.25);
+  --aurora-blend: multiply;
 
   color-scheme: light;
 }
@@ -43,6 +58,14 @@
   --rule: oklch(0.25 0.01 60);
   --accent: oklch(0.7 0.18 25);
   --accent-soft: oklch(0.7 0.18 25 / 0.18);
+  --cool: oklch(0.55 0.18 240);
+
+  --glass-bg: oklch(from var(--paper) calc(l + 0.04) c h / 0.55);
+  --glass-stroke: oklch(from var(--ink) l c h / 0.12);
+  --glass-shadow: 0 1px 0 oklch(from var(--ink) l c h / 0.05),
+                  0 30px 60px -30px oklch(0 0 0 / 0.6);
+  --aurora-blend: screen;
+
   color-scheme: dark;
 }
 
@@ -54,6 +77,12 @@
     --rule: oklch(0.25 0.01 60);
     --accent: oklch(0.7 0.18 25);
     --accent-soft: oklch(0.7 0.18 25 / 0.18);
+    --cool: oklch(0.55 0.18 240);
+    --glass-bg: oklch(from var(--paper) calc(l + 0.04) c h / 0.55);
+    --glass-stroke: oklch(from var(--ink) l c h / 0.12);
+    --glass-shadow: 0 1px 0 oklch(from var(--ink) l c h / 0.05),
+                    0 30px 60px -30px oklch(0 0 0 / 0.6);
+    --aurora-blend: screen;
     color-scheme: dark;
   }
 }
@@ -75,12 +104,30 @@ body {
   font-feature-settings: 'onum' 1, 'liga' 1, 'kern' 1;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  position: relative;
 }
 
 ::selection {
   background: var(--accent-soft);
   color: var(--accent);
 }
+
+/* Themed native scrollbar ---------------------------------------------------- */
+
+:root {
+  scrollbar-color: oklch(from var(--accent) l c h / 0.55) transparent;
+  scrollbar-width: thin;
+}
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: oklch(from var(--accent) l c h / 0.45);
+  border: 2px solid var(--paper);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+::-webkit-scrollbar-corner { background: transparent; }
 
 /* Typography ---------------------------------------------------------------- */
 
@@ -101,6 +148,7 @@ h2.section {
   letter-spacing: -0.01em;
   margin-top: 2.4em;
   margin-bottom: 0.6em;
+  scroll-margin-top: 6rem;
 }
 
 h3.subsection {
@@ -109,6 +157,7 @@ h3.subsection {
   font-size: 1.2rem;
   margin-top: 1.8em;
   margin-bottom: 0.4em;
+  scroll-margin-top: 6rem;
 }
 
 p + p {
@@ -216,6 +265,9 @@ p + p {
 .article-aside {
   position: sticky;
   top: 4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
 /* Disclaimer banner --------------------------------------------------------- */
@@ -245,9 +297,13 @@ p + p {
 /* Infobox ------------------------------------------------------------------- */
 
 .infobox {
-  border: 1px solid var(--rule);
-  background: oklch(from var(--paper) calc(l - 0.015) c h);
+  border: 1px solid var(--glass-stroke);
+  background: var(--glass-bg);
+  backdrop-filter: blur(14px) saturate(1.1);
+  -webkit-backdrop-filter: blur(14px) saturate(1.1);
+  box-shadow: var(--glass-shadow);
   padding: 1.25rem;
+  border-radius: 4px;
 }
 
 .infobox-title {
@@ -293,12 +349,471 @@ p + p {
   100% { background-position: -200% 0; }
 }
 
+/* ============================================================================
+   Modern overlay: aurora, glass, motion
+   ============================================================================ */
+
+/* Glass surface utility ----------------------------------------------------- */
+
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(14px) saturate(1.1);
+  -webkit-backdrop-filter: blur(14px) saturate(1.1);
+  border: 1px solid var(--glass-stroke);
+  box-shadow: var(--glass-shadow);
+}
+
+.glass-strong {
+  background: oklch(from var(--paper) l c h / 0.85);
+  backdrop-filter: blur(22px) saturate(1.2);
+  -webkit-backdrop-filter: blur(22px) saturate(1.2);
+  border: 1px solid var(--glass-stroke);
+  box-shadow: var(--glass-shadow);
+}
+
+/* Aurora background --------------------------------------------------------- */
+
+.aurora {
+  position: fixed;
+  inset: -20vmax;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+  mix-blend-mode: var(--aurora-blend);
+  filter: blur(48px) saturate(1.15);
+  opacity: 0.85;
+  contain: strict;
+}
+
+.aurora::before,
+.aurora::after {
+  content: '';
+  position: absolute;
+  width: 70vmax;
+  height: 70vmax;
+  border-radius: 50%;
+  will-change: transform;
+}
+
+.aurora::before {
+  top: -10vmax;
+  left: -10vmax;
+  background: radial-gradient(
+    closest-side,
+    oklch(from var(--accent) l c h / 0.45),
+    oklch(from var(--accent) l c h / 0) 70%
+  );
+  animation: aurora-drift-a 24s var(--ease-plate) infinite;
+}
+
+.aurora::after {
+  bottom: -10vmax;
+  right: -15vmax;
+  background: radial-gradient(
+    closest-side,
+    oklch(from var(--cool) l c h / 0.32),
+    oklch(from var(--cool) l c h / 0) 70%
+  );
+  animation: aurora-drift-b 32s var(--ease-plate) infinite;
+}
+
+@keyframes aurora-drift-a {
+  0%, 100% { transform: translate3d(-4%, -4%, 0) rotate(0deg) scale(1); }
+  50%      { transform: translate3d(6%, 8%, 0) rotate(8deg) scale(1.08); }
+}
+
+@keyframes aurora-drift-b {
+  0%, 100% { transform: translate3d(4%, 6%, 0) rotate(0deg) scale(1.05); }
+  50%      { transform: translate3d(-6%, -4%, 0) rotate(-10deg) scale(1); }
+}
+
+/* Reading-progress bar ------------------------------------------------------ */
+
+.reading-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 2px;
+  width: 100%;
+  background: transparent;
+  z-index: 60;
+  pointer-events: none;
+}
+
+.reading-progress > span {
+  display: block;
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(
+    90deg,
+    oklch(from var(--accent) l c h / 0) 0%,
+    var(--accent) 30%,
+    var(--accent) 70%,
+    oklch(from var(--accent) l c h / 0) 100%
+  );
+  transform-origin: left center;
+  transform: scaleX(var(--progress, 0));
+  transition: transform 80ms linear;
+}
+
+@supports (animation-timeline: scroll()) {
+  .reading-progress > span.scroll-driven {
+    transform: scaleX(0);
+    animation: progress-fill linear both;
+    animation-timeline: scroll(root);
+  }
+  @keyframes progress-fill {
+    to { transform: scaleX(1); }
+  }
+}
+
+/* Reveal-on-scroll ---------------------------------------------------------- */
+
+.reveal {
+  opacity: 0;
+  transform: translateY(22px);
+  transition:
+    opacity 0.8s var(--ease-out-soft),
+    transform 0.8s var(--ease-out-soft);
+  will-change: opacity, transform;
+}
+
+.reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+.reveal.delay-1 { transition-delay: 60ms; }
+.reveal.delay-2 { transition-delay: 120ms; }
+.reveal.delay-3 { transition-delay: 180ms; }
+.reveal.delay-4 { transition-delay: 240ms; }
+
+/* Article-body sections auto-revealed via IntersectionObserver in
+   article-view.tsx; same class as above is applied at runtime. */
+
+/* Parallax title ------------------------------------------------------------ */
+
+.parallax-title {
+  --parallax: 0px;
+  transform: translate3d(0, var(--parallax), 0);
+  will-change: transform;
+}
+
+/* Buttons (glass + solid) --------------------------------------------------- */
+
+.btn-mono {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.7rem 1.2rem;
+  text-decoration: none;
+  border-radius: 2px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition:
+    transform 0.18s var(--ease-plate),
+    background 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+  cursor: pointer;
+}
+
+.btn-mono:hover {
+  transform: translateY(-1px);
+}
+
+.btn-solid {
+  background: var(--accent);
+  color: var(--paper);
+  border: 1px solid var(--accent);
+  box-shadow: 0 6px 20px -8px oklch(from var(--accent) l c h / 0.6);
+}
+
+.btn-solid:hover {
+  box-shadow: 0 12px 28px -10px oklch(from var(--accent) l c h / 0.7);
+}
+
+.btn-glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px) saturate(1.1);
+  -webkit-backdrop-filter: blur(10px) saturate(1.1);
+  color: var(--ink);
+  border: 1px solid var(--glass-stroke);
+}
+
+.btn-glass:hover {
+  background: oklch(from var(--paper) l c h / 0.85);
+  border-color: var(--rule);
+}
+
+/* Nav glass surface (applied when scrolled) --------------------------------- */
+
+.site-nav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  border-bottom: 1px solid transparent;
+  transition: background 0.25s var(--ease-plate), border-color 0.25s var(--ease-plate),
+              backdrop-filter 0.25s var(--ease-plate), padding 0.25s var(--ease-plate);
+  padding: 0.9rem var(--gutter);
+}
+
+.site-nav.is-scrolled {
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px) saturate(1.15);
+  -webkit-backdrop-filter: blur(16px) saturate(1.15);
+  border-bottom-color: var(--glass-stroke);
+  padding: 0.6rem var(--gutter);
+}
+
+/* TOC ----------------------------------------------------------------------- */
+
+.toc {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1.6;
+}
+
+.toc-title {
+  color: var(--ink-soft);
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--rule);
+}
+
+.toc ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.35rem; }
+.toc li { position: relative; padding-left: 0.75rem; }
+.toc li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.55em;
+  width: 4px;
+  height: 1px;
+  background: var(--rule);
+  transition: background 0.2s ease, width 0.2s ease;
+}
+.toc a {
+  color: var(--ink-soft);
+  text-decoration: none;
+  transition: color 0.2s ease;
+  display: block;
+}
+.toc a:hover { color: var(--ink); }
+.toc li.is-active::before { background: var(--accent); width: 8px; }
+.toc li.is-active a { color: var(--accent); }
+
+/* Modal scaffolding (palette + shortcuts) ----------------------------------- */
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: oklch(from var(--ink) l c h / 0.35);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 80;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: clamp(2rem, 12vh, 8rem);
+  padding-inline: 1rem;
+  animation: modal-fade 0.18s var(--ease-out-soft);
+}
+
+@keyframes modal-fade { from { opacity: 0; } to { opacity: 1; } }
+
+.modal-panel {
+  width: min(640px, 100%);
+  background: var(--glass-bg);
+  backdrop-filter: blur(22px) saturate(1.2);
+  -webkit-backdrop-filter: blur(22px) saturate(1.2);
+  border: 1px solid var(--glass-stroke);
+  box-shadow: var(--glass-shadow);
+  border-radius: 6px;
+  overflow: hidden;
+  animation: modal-rise 0.28s var(--ease-out-soft);
+}
+
+@keyframes modal-rise {
+  from { opacity: 0; transform: translateY(8px) scale(0.985); }
+  to   { opacity: 1; transform: none; }
+}
+
+.modal-input {
+  width: 100%;
+  padding: 1rem 1.2rem;
+  font-family: var(--font-body);
+  font-size: 1.05rem;
+  background: transparent;
+  color: var(--ink);
+  border: none;
+  border-bottom: 1px solid var(--rule);
+  outline: none;
+}
+
+.modal-input::placeholder { color: var(--ink-soft); }
+
+.modal-list {
+  list-style: none;
+  padding: 0.4rem 0;
+  margin: 0;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.modal-list li button {
+  width: 100%;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 1rem;
+  align-items: baseline;
+  padding: 0.7rem 1.2rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  color: var(--ink);
+  font: inherit;
+  transition: background 0.12s ease;
+}
+
+.modal-list li button:hover,
+.modal-list li.is-active button {
+  background: var(--accent-soft);
+}
+
+.modal-list .result-title {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+}
+
+.modal-list .result-summary {
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+  grid-column: 2 / -1;
+  margin-top: 0.15rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.modal-list .result-plate {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.6rem 1.2rem;
+  border-top: 1px solid var(--rule);
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.kbd {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.05em;
+  padding: 0.1rem 0.4rem;
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  background: oklch(from var(--paper) calc(l - 0.02) c h);
+  color: var(--ink-soft);
+}
+
+/* Theme toggle -------------------------------------------------------------- */
+
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.6rem;
+  background: transparent;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  color: var(--ink-soft);
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.theme-toggle:hover {
+  color: var(--ink);
+  border-color: var(--ink-soft);
+}
+
+.theme-toggle svg {
+  width: 0.85rem;
+  height: 0.85rem;
+}
+
+/* Drop cap (article first paragraph) ---------------------------------------- */
+
+.article-body > p:first-of-type::first-letter,
+.article-body > .lead + p::first-letter {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 3.2em;
+  line-height: 0.85;
+  float: left;
+  padding: 0.05em 0.12em 0 0;
+  color: var(--accent);
+}
+
+/* View Transitions ---------------------------------------------------------- */
+
+@view-transition { navigation: auto; }
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.32s;
+  animation-timing-function: var(--ease-plate);
+}
+
+::view-transition-old(root) {
+  animation-name: vt-fade-out;
+}
+::view-transition-new(root) {
+  animation-name: vt-fade-in;
+}
+
+@keyframes vt-fade-out {
+  to { opacity: 0; transform: translateY(-6px); }
+}
+@keyframes vt-fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+}
+
+.vt-title { view-transition-name: article-title; }
+.vt-article { view-transition-name: article-body; }
+
 /* Reduced motion ------------------------------------------------------------ */
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
   }
   .skeleton { animation: none; }
+  .aurora { animation: none; }
+  .aurora::before,
+  .aurora::after { animation: none; transform: none; }
+  .reveal { opacity: 1; transform: none; }
+  .parallax-title { transform: none !important; }
 }
