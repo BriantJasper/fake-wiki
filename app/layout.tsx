@@ -7,6 +7,7 @@ import { CommandPalette } from '@/components/command-palette';
 import { ShortcutsOverlay } from '@/components/shortcuts-overlay';
 import { ScrollReveal } from '@/components/scroll-reveal';
 import { ThemeProvider, THEME_INIT_SCRIPT } from '@/components/theme-provider';
+import { getSiteUrlStatic } from '@/lib/site-url';
 import './globals.css';
 
 const fraunces = Fraunces({
@@ -29,7 +30,7 @@ const jetbrains = JetBrains_Mono({
 });
 
 const SITE_NAME = process.env.NEXT_PUBLIC_SITE_NAME ?? 'Atlas of Nowhere';
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
+const SITE_URL = getSiteUrlStatic();
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

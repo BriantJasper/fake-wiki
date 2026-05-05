@@ -9,11 +9,12 @@ import { Infobox } from '@/components/infobox';
 import { DisclaimerBanner } from '@/components/disclaimer-banner';
 import { StreamingArticle } from '@/components/streaming-article';
 import { ArticleToc } from '@/components/article-toc';
+import { getSiteUrlStatic } from '@/lib/site-url';
 
 type Params = { slug: string };
 
 const SITE_NAME = process.env.NEXT_PUBLIC_SITE_NAME ?? 'Atlas of Nowhere';
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
+const SITE_URL = getSiteUrlStatic();
 
 async function getArticle(slug: string) {
   return db
