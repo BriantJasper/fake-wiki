@@ -32,8 +32,10 @@ export function StreamingArticle({
 }) {
   const router = useRouter();
   const [state, setState] = useState<State>({ kind: 'connecting' });
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
+    setState({ kind: 'connecting' });
     const url = parentSlug
       ? `/api/article/${slug}?parent=${encodeURIComponent(parentSlug)}`
       : `/api/article/${slug}`;
@@ -74,7 +76,7 @@ export function StreamingArticle({
     });
 
     return () => source.close();
-  }, [slug, parentSlug, router]);
+  }, [slug, parentSlug, router, attempt]);
 
   if (state.kind === 'error') {
     return (
@@ -85,7 +87,7 @@ export function StreamingArticle({
         <p style={{ marginTop: '1rem', color: 'var(--ink-soft)' }}>{state.message}</p>
         <button
           type="button"
-          onClick={() => router.refresh()}
+          onClick={() => setAttempt((n) => n + 1)}
           className="ink-link"
           style={{
             marginTop: '1.5rem',

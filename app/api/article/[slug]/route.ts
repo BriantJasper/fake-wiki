@@ -3,7 +3,7 @@ import { eq } from 'drizzle-orm';
 import { db, schema } from '@/lib/db/client';
 import { isValidSlug, slugToTitle, titleToSlug } from '@/lib/slug';
 import { generateArticle } from '@/lib/ai/router';
-import { renderArticleHtml } from '@/lib/render';
+import { renderArticleHtml, expandEmbeddedLinks } from '@/lib/render';
 import { PROMPT_VERSION } from '@/lib/ai/prompt';
 import { limitGeneration } from '@/lib/ratelimit';
 import type { Article, ArticleStreamEvent } from '@/lib/ai/schema';
@@ -35,8 +35,15 @@ function normalizeLinks(article: Article): Article {
   const sections = article.sections.map((section) => ({
     ...section,
     paragraphs: section.paragraphs.map((paragraph) =>
-      paragraph.map((item) => {
-        if (typeof item === 'string') return item;
+      paragraph.flatMap((item) => {
+        if (typeof item === 'string') {
+          return expandEmbeddedLinks(item).map((part) => {
+            if (typeof part === 'string') return part;
+            const link = part.link.trim();
+            if (!titleToSlug(link)) return part.text;
+            return { link, text: part.text };
+          });
+        }
         const link = item.link.trim();
         if (!titleToSlug(link)) return item.text;
         return { link, text: item.text };

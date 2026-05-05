@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { renderArticleHtml } from '@/lib/render';
+import { renderArticleHtml, expandEmbeddedLinks } from '@/lib/render';
 import type { Article } from '@/lib/ai/schema';
 
 const sampleArticle: Article = {
@@ -54,5 +54,58 @@ describe('renderArticleHtml', () => {
   it('emits a See also section with valid links', () => {
     expect(html).toContain('See also');
     expect(html).toContain('href="/wiki/river-iridis"');
+  });
+});
+
+describe('expandEmbeddedLinks', () => {
+  it('returns plain strings unchanged', () => {
+    expect(expandEmbeddedLinks('just text')).toEqual(['just text']);
+  });
+
+  it('splits a single embedded link object out of the text', () => {
+    const out = expandEmbeddedLinks(
+      'established by the {"link":"Vallish Empire","text":"Vallish Empire"} in 672 GD.',
+    );
+    expect(out).toEqual([
+      'established by the ',
+      { link: 'Vallish Empire', text: 'Vallish Empire' },
+      ' in 672 GD.',
+    ]);
+  });
+
+  it('handles multiple embedded links in one string', () => {
+    const out = expandEmbeddedLinks(
+      'The {"link":"Nimbus Mountains","text":"Nimbus Mountains"} and the {"link":"Crescent Sea","text":"Crescent Sea"}.',
+    );
+    expect(out).toEqual([
+      'The ',
+      { link: 'Nimbus Mountains', text: 'Nimbus Mountains' },
+      ' and the ',
+      { link: 'Crescent Sea', text: 'Crescent Sea' },
+      '.',
+    ]);
+  });
+
+  it('renders an article with link objects embedded as JSON in paragraph strings, after expansion', () => {
+    const expanded = expandEmbeddedLinks(
+      'inhabited since the {"link":"Dawn Age","text":"Dawn Age"}.',
+    );
+    const article: Article = {
+      title: 'T',
+      summary: 'A short lead paragraph for testing purposes only.',
+      sections: [
+        { heading: 'History', paragraphs: [expanded] },
+        { heading: 'Other', paragraphs: [['x']] },
+      ],
+      seeAlso: [],
+    };
+    const out = renderArticleHtml(article);
+    expect(out).toContain('href="/wiki/dawn-age"');
+    expect(out).not.toContain('{&quot;link&quot;');
+  });
+
+  it('leaves malformed pseudo-JSON in place', () => {
+    const out = expandEmbeddedLinks('see {"link":"unterminated');
+    expect(out).toEqual(['see {"link":"unterminated']);
   });
 });

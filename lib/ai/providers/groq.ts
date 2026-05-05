@@ -32,6 +32,21 @@ const JSON_INSTRUCTION = `\n\nReturn a single JSON object matching this TypeScri
   seeAlso: string[];
   references?: string[];
 }
+
+A paragraph is an ARRAY whose elements are either plain strings or inline link OBJECTS. Inline links must be real JSON objects placed as separate array elements — NEVER embedded as JSON-formatted text inside a string.
+
+Correct:
+"paragraphs": [[
+  "The first recorded settlement was established by the ",
+  { "link": "Vallish Empire", "text": "Vallish Empire" },
+  " in 672 GD."
+]]
+
+Wrong (do not do this):
+"paragraphs": [[
+  "The first recorded settlement was established by the {\\"link\\":\\"Vallish Empire\\",\\"text\\":\\"Vallish Empire\\"} in 672 GD."
+]]
+
 Output only the JSON object — no commentary, no markdown fences.`;
 
 export async function* generateArticleGroq(
